@@ -40,7 +40,8 @@ for worker in workers:
 for worker in workers:
     worker.join()
 
-with open("discovered_subdomains.txt", "w", encoding="utf-8") as f:
+file_name = f"{domain}_discovered_subdomains.txt"
+with open(file_name, "w", encoding="utf-8") as f:
     while out_queue.qsize():
         print(out_queue.get(), file = f)
-print(f"saved to file [discovered_subdomains.txt]")
+print(f"saved to file {file_name}")
