@@ -6,7 +6,8 @@ try:
 except IndexError:
     ip_address = None
 
-access_token = ''
+with open("token.token", "r", encoding="utf-8") as f:
+    access_token = f.read().strip()
 
 handler = ipinfo.getHandler(access_token)
 details = handler.getDetails(ip_address)
