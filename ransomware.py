@@ -18,6 +18,22 @@ def load_salt():
     # load salt from salt.salt file
     return open("salt.salt", "rb").read()
 
+def ask_overwrite_exist_salt_file():
+    """Check whether the salt.salt file exists
+    and warn the user about the danger of
+    overwriting an existing salt.salt file"""
+    if os.path.isfile("salt.salt"):
+        print("Attention! With the '-s' option you will overwrite an existing salt file.\n",
+              "If you do not want to overwrite the file, enter 'no'")
+        user_input = input("Do you want to overwrite existing salt file? (yes/no): ")
+        if user_input.lower() in ["yes", "y"]:
+            return True
+        else:
+            #print("Exiting script...")
+            print("I will use existing file to salt password :)")
+            return False
+    return True
+
 def generate_key(password, salt_size=16 , load_existing_salt=False, save_salt=True):
     """Generates a key from a `password` and the salt.
     If `load_existing_salt` is True, it'll load the salt from a file
@@ -99,15 +115,19 @@ if __name__ == "__main__":
             print("The entered passwords are not the same")
             exit(1)
         password = password1
-
     elif args.decrypt:
         password = getpass.getpass("Enter the password you used for encryption: ")
+
     if args.salt_size:
-        key = generate_key(password, salt_size=args.salt_size, save_salt=True)
+        if ask_overwrite_exist_salt_file():
+            key = generate_key(password, salt_size=args.salt_size, save_salt=True)
+        else:
+            key = generate_key(password, load_existing_salt=True)
     else:
         key = generate_key(password, load_existing_salt=True)
     encrypt_ = args.encrypt
     decrypt_ = args.decrypt
+
     if encrypt_ and decrypt_:
         raise TypeError("Please specify whether you want to encrypt the file or decrypt it.")
     elif encrypt_:
