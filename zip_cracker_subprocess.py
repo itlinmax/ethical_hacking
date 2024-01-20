@@ -26,7 +26,7 @@ def unarchive(passwords, file):
             return
 
         try:
-            subprocess.run(f"7z t -bd -y -P'{password}' {file}",
+            subprocess.run([f"7z t -bd -y -P'{password}' {file}"],
                 shell = True,
                 executable="/bin/bash",
                 stderr = subprocess.DEVNULL,
