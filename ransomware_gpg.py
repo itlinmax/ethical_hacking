@@ -62,24 +62,29 @@ if __name__ == "__main__":
     parser.add_argument("path", help="Path to encrypt/decrypt, can be a file or an entire folder")
     parser.add_argument("-e", "--encrypt", action="store_true", help="Whether to encrypt the file/folder, only -e or -d can be specified.")
     parser.add_argument("-d", "--decrypt", action="store_true", help="Whether to decrypt the file/folder, only -e or -d can be specified.")
+    parser.add_argument("-p", "--password", help="The password you want to encrypt/decrypt files with.")
     args = parser.parse_args()
     encrypt_ = args.encrypt
     decrypt_ = args.decrypt
+    password = args.password
     if encrypt_ and decrypt_:
         raise TypeError("Please specify whether you want to encrypt the file or decrypt it.")
     elif encrypt_:
-        password1 = getpass.getpass("Enter the password for encryption: ")
-        password2 = getpass.getpass("Enter the same password for second time: ")
-        if not check_passwords_equality(password1, password2):
-            print("The entered passwords are not the same")
-            sys.exit(1)
-        password = password1
+        if not password:
+            password1 = getpass.getpass("Enter the password for encryption: ")
+            password2 = getpass.getpass("Enter the same password for second time: ")
+            if not check_passwords_equality(password1, password2):
+                print("The entered passwords are not the same")
+                sys.exit(1)
+            password = password1
         if os.path.isfile(args.path):
             encrypt_file(args.path, password)
         elif os.path.isdir(args.path):
             encrypt_folder(args.path, password)
+
     elif decrypt_:
-        password = getpass.getpass("Enter the password you used for encryption: ")
+        if not password:
+            password = getpass.getpass("Enter the password you used for encryption: ")
         if os.path.isfile(args.path):
             decrypt_file(args.path, password)
         elif os.path.isdir(args.path):
