@@ -14,12 +14,13 @@ def encrypt_file(file, password):
         print(f"Process gpg failed because did not return a successful return code: [{exc.returncode}]")
         print(f"[{exc.stderr}]")
         sys.exit(1)
-    try:
-        print(f"[*] Shreding original {file}")
-        shred_process = subprocess.run([f"shred -zu -n5 '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
-    except subprocess.CalledProcessError as exc:
-        print(f"Process shred failed because did not return a successful return code: [{exc.returncode}]")
-        print(f"[{exc.stderr}]")
+    if gpg_process.returncode == 0:
+        try:
+            print(f"[*] Shreding original {file}")
+            shred_process = subprocess.run([f"shred -zu -n5 '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
+        except subprocess.CalledProcessError as exc:
+            print(f"Process shred failed because did not return a successful return code: [{exc.returncode}]")
+            print(f"[{exc.stderr}]")
 
 
 def decrypt_file(file, password):
