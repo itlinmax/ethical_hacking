@@ -49,7 +49,7 @@ def process_packet(packet):
             # not UDP packet, this can be IPerror/UDPerror packets
             pass
         # set back as netfilter queue packet
-    packet.set_payload(bytes(scapy_packet))
+        packet.set_payload(bytes(scapy_packet))
     packet.accept()
 
 
