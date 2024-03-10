@@ -30,7 +30,7 @@ for _ in range(args.amount):
             password.append(secrets.choice(string.ascii_lowercase))
         for _ in range(args.special_chars):
             password.append(secrets.choice(string.punctuation))
-        random.shuffle(password)
+        #random.shuffle(password)
         password = ''.join(password)
         passwords.append(password)
 
