@@ -21,7 +21,7 @@ Compression: Uncompressed, ZIP, ZLIB, BZIP2
 """
 
 
-def encrypt_file(file, password):
+def encrypt_file(file, password, shred=False):
     print(f"[*] Encrypting {file}")
     try:
         gpg_process = subprocess.run([f"gpg --yes --batch --symmetric --cipher-algo AES256 --armor --passphrase {password} -o '{file}.asc' '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
@@ -31,8 +31,12 @@ def encrypt_file(file, password):
         sys.exit(1)
     if gpg_process.returncode == 0:
         try:
-            print(f"[*] Shreding original {file}")
-            shred_process = subprocess.run([f"shred -zu -n5 '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
+            if shred:
+                print(f"[*] Shreding original {file}")
+                subprocess.run([f"shred -zu -n5 '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
+            else:
+                print(f"[*] Removing original {file}")
+                subprocess.run([f"rm -rf '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
         except subprocess.CalledProcessError as exc:
             print(f"Process shred failed because did not return a successful return code: [{exc.returncode}]")
             print(f"[{exc.stderr}]")
@@ -49,12 +53,12 @@ def decrypt_file(file, password):
             print(f"[{exc.stderr}]")
 
 
-def encrypt_folder(foldername, password):
+def encrypt_folder(foldername, password, shred):
     for child in pathlib.Path(foldername).glob("*"):
         if child.is_file():
-            encrypt_file(child, password)
+            encrypt_file(child, password, shred)
         elif child.is_dir():
-            encrypt_folder(child, password)
+            encrypt_folder(child, password, shred)
 
 
 def decrypt_folder(foldername, password):
@@ -78,10 +82,12 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--encrypt", action="store_true", help="Whether to encrypt the file/folder, only -e or -d can be specified.")
     parser.add_argument("-d", "--decrypt", action="store_true", help="Whether to decrypt the file/folder, only -e or -d can be specified.")
     parser.add_argument("-p", "--password", help="The password you want to encrypt/decrypt files with.")
+    parser.add_argument("-s", "--shred", default=False, action="store_true", help="Shred file after encrypting.")
     args = parser.parse_args()
     encrypt_ = args.encrypt
     decrypt_ = args.decrypt
     password = args.password
+    shred = args.shred
     if encrypt_ and decrypt_:
         raise TypeError("Please specify whether you want to encrypt the file or decrypt it.")
     elif encrypt_:
@@ -93,9 +99,9 @@ if __name__ == "__main__":
                 sys.exit(1)
             password = password1
         if os.path.isfile(args.path):
-            encrypt_file(args.path, password)
+            encrypt_file(args.path, password, shred)
         elif os.path.isdir(args.path):
-            encrypt_folder(args.path, password)
+            encrypt_folder(args.path, password, shred)
 
     elif decrypt_:
         if not password:
