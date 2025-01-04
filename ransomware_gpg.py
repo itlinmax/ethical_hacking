@@ -41,18 +41,6 @@ def encrypt_file(file, password, shred=False):
             print(f"Process shred failed because did not return a successful return code: [{exc.returncode}]")
             print(f"[{exc.stderr}]")
 
-
-def decrypt_file(file, password):
-    if str(file).endswith(".asc"):
-        print(f"[*] Decrypting {file}")
-        encripted_name = os.path.splitext(file)[0]
-        try:
-            completed_process = subprocess.run([f"gpg --yes --batch --decrypt --passphrase {password} -o '{encripted_name}' '{file}' && rm '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
-        except subprocess.CalledProcessError as exc:
-            print(f"Process gpg failed because did not return a successful return code: [{exc.returncode}]")
-            print(f"[{exc.stderr}]")
-
-
 def encrypt_folder(foldername, password, shred):
     for child in pathlib.Path(foldername).glob("*"):
         if child.is_file():
@@ -60,6 +48,16 @@ def encrypt_folder(foldername, password, shred):
         elif child.is_dir():
             encrypt_folder(child, password, shred)
 
+
+def decrypt_file(file, password):
+    if str(file).endswith(".asc"):
+        print(f"[*] Decrypting {file}")
+        encripted_name = os.path.splitext(file)[0]
+        try:
+            completed_process = subprocess.run([f"gpg --yes --batch --decrypt --cipher-algo AES256 --passphrase {password} -o '{encripted_name}' '{file}' && rm '{file}'"], check=True, shell=True, executable="/bin/bash", capture_output=True, encoding="utf-8")
+        except subprocess.CalledProcessError as exc:
+            print(f"Process gpg failed because did not return a successful return code: [{exc.returncode}]")
+            print(f"[{exc.stderr}]")
 
 def decrypt_folder(foldername, password):
     for child in pathlib.Path(foldername).glob("*"):
@@ -102,6 +100,9 @@ if __name__ == "__main__":
             encrypt_file(args.path, password, shred)
         elif os.path.isdir(args.path):
             encrypt_folder(args.path, password, shred)
+        else:
+            print(f"ERROR: such file or folder does not exist: [{os.path.abspath(args.path)}]")
+            sys.exit(1)
 
     elif decrypt_:
         if not password:
